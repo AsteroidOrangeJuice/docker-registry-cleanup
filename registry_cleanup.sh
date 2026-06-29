@@ -171,6 +171,14 @@ start_cleanup(){
   #run curl with --insecure?
   [ "$CURL_INSECURE" == "true" ] && CURL_INSECURE_ARG=--insecure
 
+  #verify docker container exists
+  if ! docker inspect --type=container "$DOCKER_REGISTRY_NAME" > /dev/null 2>&1; then
+    echo "No such container: ${DOCKER_REGISTRY_NAME} - quitting"
+    echo "Available registry containers:"
+    docker ps --format '  {{.Names}}' | grep -i registry || echo "  (none found)"
+    exit 1
+  fi
+
   #verify registry url
   if ! _curl -m 3 ${REGISTRY_URL}/v2/ > /dev/null; then
     echo "Could not contact registry at ${REGISTRY_URL} - quitting"
